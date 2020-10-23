@@ -1303,7 +1303,7 @@ errout:
  * contents (if '-n' was specified), or pass it to libzfs to do the creation.
  */
 
-#define	SYSTEM256	(256 * 1024 * 1024)
+#define	SYSTEM512	(512 * 1024 * 1024)
 int
 zpool_do_create(int argc, char **argv)
 {
@@ -1342,7 +1342,7 @@ zpool_do_create(int argc, char **argv)
 			 */
 			boot_type = ZPOOL_CREATE_BOOT_LABEL;
 			if (boot_size == 0)
-				boot_size = SYSTEM256;
+				boot_size = SYSTEM512;
 			break;
 		case 'R':
 			altroot = optarg;
