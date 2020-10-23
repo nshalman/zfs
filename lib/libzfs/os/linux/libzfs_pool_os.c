@@ -290,8 +290,10 @@ zpool_label_disk(libzfs_handle_t *hdl, zpool_handle_t *zhp, const char *name,
 		start_block = NEW_START_BLOCK;
 
 	/*
-	 * EFI System partition is using slice 0.
-	 * ZFS is on slice 1.
+	 * EFI System partition is using slice 1.
+	 * ZFS is on slice 0.
+	 * Physical order currently doesn't match slice order...
+	 * ( I blame zfs_append_partition)
 	 * We assume the GPT partition table without system
 	 * partition has zfs p_start == NEW_START_BLOCK.
 	 * If start_block != NEW_START_BLOCK, it means we have
@@ -360,21 +362,21 @@ zpool_label_disk(libzfs_handle_t *hdl, zpool_handle_t *zhp, const char *name,
 		    EFI_PART_NAME_LEN, "zfs");
 	} else {
 		slice_size = start_block - NEW_START_BLOCK;
-		vtoc->efi_parts[0].p_start = NEW_START_BLOCK;
-		vtoc->efi_parts[0].p_size = slice_size;
-		vtoc->efi_parts[0].p_tag = V_SYSTEM;
-		zpool_label_name(vtoc->efi_parts[0].p_name,
-		    EFI_PART_NAME_LEN, "loader");
+		vtoc->efi_parts[1].p_start = NEW_START_BLOCK;
+		vtoc->efi_parts[1].p_size = slice_size;
+		vtoc->efi_parts[1].p_tag = V_SYSTEM;
+		zpool_label_name(vtoc->efi_parts[1].p_name,
+		    EFI_PART_NAME_LEN, "EFI");
 		if (slice != NULL)
-			*slice = 1;
-		/* prepare slice 1 */
+			*slice = 0;
+		/* prepare slice 0 */
 		slice_size = vtoc->efi_last_u_lba + 1 - slice_size;
 		slice_size -= NEW_START_BLOCK;
 		slice_size = P2ALIGN(slice_size, PARTITION_END_ALIGNMENT);
-		vtoc->efi_parts[1].p_start = start_block;
-		vtoc->efi_parts[1].p_size = slice_size;
-		vtoc->efi_parts[1].p_tag = V_USR;
-		zpool_label_name(vtoc->efi_parts[1].p_name,
+		vtoc->efi_parts[0].p_start = start_block;
+		vtoc->efi_parts[0].p_size = slice_size;
+		vtoc->efi_parts[0].p_tag = V_USR;
+		zpool_label_name(vtoc->efi_parts[0].p_name,
 		    EFI_PART_NAME_LEN, "zfs");
 	}
 
