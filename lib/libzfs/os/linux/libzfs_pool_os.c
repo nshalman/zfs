@@ -291,7 +291,7 @@ zpool_label_disk(libzfs_handle_t *hdl, zpool_handle_t *zhp, const char *name,
 
 	/*
 	 * EFI System partition is using slice 0.
-	 * ZFS is on slice 1 and slice 8 is reserved.
+	 * ZFS is on slice 1.
 	 * We assume the GPT partition table without system
 	 * partition has zfs p_start == NEW_START_BLOCK.
 	 * If start_block != NEW_START_BLOCK, it means we have
@@ -344,7 +344,7 @@ zpool_label_disk(libzfs_handle_t *hdl, zpool_handle_t *zhp, const char *name,
 	if (start_block == NEW_START_BLOCK) {
 		/*
 		 * Use default layout.
-		 * ZFS is on slice 0 and slice 8 is reserved.
+		 * ZFS is on slice 0.
 		 */
 		slice_size = vtoc->efi_last_u_lba + 1;
 		slice_size -= start_block;
