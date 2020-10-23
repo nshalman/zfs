@@ -226,7 +226,6 @@ zpool_label_disk(libzfs_handle_t *hdl, zpool_handle_t *zhp, const char *name,
 	char path[MAXPATHLEN];
 	struct dk_gpt *vtoc;
 	int rval, fd;
-	size_t resv = EFI_MIN_RESV_SIZE;
 	uint64_t slice_size;
 	diskaddr_t start_block;
 	char errbuf[1024];
@@ -348,7 +347,6 @@ zpool_label_disk(libzfs_handle_t *hdl, zpool_handle_t *zhp, const char *name,
 		 * ZFS is on slice 0 and slice 8 is reserved.
 		 */
 		slice_size = vtoc->efi_last_u_lba + 1;
-		slice_size -= EFI_MIN_RESV_SIZE;
 		slice_size -= start_block;
 		slice_size = P2ALIGN(slice_size, PARTITION_END_ALIGNMENT);
 		if (slice != NULL)
@@ -360,10 +358,6 @@ zpool_label_disk(libzfs_handle_t *hdl, zpool_handle_t *zhp, const char *name,
 		vtoc->efi_parts[0].p_tag = V_USR;
 		zpool_label_name(vtoc->efi_parts[0].p_name,
 		    EFI_PART_NAME_LEN, "zfs");
-
-		vtoc->efi_parts[8].p_start = slice_size + start_block;
-		vtoc->efi_parts[8].p_size = resv;
-		vtoc->efi_parts[8].p_tag = V_RESERVED;
 	} else {
 		slice_size = start_block - NEW_START_BLOCK;
 		vtoc->efi_parts[0].p_start = NEW_START_BLOCK;
@@ -375,7 +369,6 @@ zpool_label_disk(libzfs_handle_t *hdl, zpool_handle_t *zhp, const char *name,
 			*slice = 1;
 		/* prepare slice 1 */
 		slice_size = vtoc->efi_last_u_lba + 1 - slice_size;
-		slice_size -= resv;
 		slice_size -= NEW_START_BLOCK;
 		slice_size = P2ALIGN(slice_size, PARTITION_END_ALIGNMENT);
 		vtoc->efi_parts[1].p_start = start_block;
@@ -383,10 +376,6 @@ zpool_label_disk(libzfs_handle_t *hdl, zpool_handle_t *zhp, const char *name,
 		vtoc->efi_parts[1].p_tag = V_USR;
 		zpool_label_name(vtoc->efi_parts[1].p_name,
 		    EFI_PART_NAME_LEN, "zfs");
-
-		vtoc->efi_parts[8].p_start = slice_size + start_block;
-		vtoc->efi_parts[8].p_size = resv;
-		vtoc->efi_parts[8].p_tag = V_RESERVED;
 	}
 
 	rval = efi_write(fd, vtoc);
